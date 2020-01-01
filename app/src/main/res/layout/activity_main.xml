@@ -18,11 +18,18 @@
         android:orientation="horizontal">
 
         <Button
-            android:id="@+id/bt"
+            android:id="@+id/btReset"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
             android:text="复位" />
+
+        <TextView
+            android:id="@+id/tvLatLng"
+            android:layout_width="144dp"
+            android:layout_height="32dp"
+            android:layout_weight="1"
+            android:text="纬度精度" />
 
         <Button
             android:id="@+id/btMock"
@@ -30,13 +37,6 @@
             android:layout_height="wrap_content"
             android:layout_weight="1"
             android:text="模拟" />
-
-        <Button
-            android:id="@+id/buttons"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:text="普通" />
     </LinearLayout>
 
 </RelativeLayout>
