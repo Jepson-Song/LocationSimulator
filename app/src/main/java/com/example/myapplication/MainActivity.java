@@ -58,7 +58,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     private Marker mMarker;
     private Thread thread;// 需要一个线程一直刷新
     private Boolean RUN = true;
-    private LocationManager locationManager;
+    private LocationManager mLocationManager;
     private String mMockProviderName = LocationManager.GPS_PROVIDER;;
     private double initLat = 34.03647225653339;
     private double initLng = 108.77183469000138;
@@ -179,15 +179,25 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
      * initLocation 初始化 位置模拟
      *
      */
-    private void initLocation() {
+    private boolean initLocation() {
         Toast.makeText(MainActivity.this, mMockProviderName, Toast.LENGTH_LONG).show();
 
-        locationManager = (LocationManager) this.getSystemService(Context.LOCATION_SERVICE);
-        locationManager.addTestProvider(mMockProviderName, false, true, false,
-                false, true, true, true, 0, 5);
-        locationManager.setTestProviderEnabled(mMockProviderName, true);
-        //locationManager.requestLocationUpdates(mMockProviderName, 0, 0, this);
-        //locationManager.requestLocationUpdates("gps", 1000L, 0.1F, this);
+        mLocationManager = (LocationManager) this.getSystemService(Context.LOCATION_SERVICE);
+        if (!mLocationManager.isProviderEnabled(LocationManager.GPS_PROVIDER)) {
+            return false;
+        }
+
+        try{
+            mLocationManager.addTestProvider(LocationManager.GPS_PROVIDER, false, true, false,
+                    false, true, true, true, 0, 5);
+            mLocationManager.setTestProviderEnabled(LocationManager.GPS_PROVIDER, true);
+            //mLocationManager.requestLocationUpdates(mMockProviderName, 0, 0, this);
+            //mLocationManager.requestLocationUpdates("gps", 1000L, 0.1F, this);
+        }catch (Exception e){
+            e.printStackTrace();
+            return false;
+        }
+
 
 
         mLocationClient = new LocationClient(getApplicationContext());     //声明LocationClient类
@@ -198,7 +208,22 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         mLocationClient.start();
         //图片点击事件，回到定位点
         mLocationClient.requestLocation();
-        
+
+        return true;
+    }
+
+    //停止模拟位置服务
+    public void stopMockLocation() {
+        //mbUpdate = false;
+
+        if (mLocationManager != null) {
+            try {
+                mLocationManager.clearTestProviderEnabled(LocationManager.GPS_PROVIDER);
+                mLocationManager.removeTestProvider(LocationManager.GPS_PROVIDER);
+            } catch (Exception e) {
+                Log.e("GPS", e.toString());
+            }
+        }
     }
 
     //配置定位SDK参数
@@ -240,7 +265,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             //api 16以上的需要加上这一句才能模拟定位 , 也就是targetSdkVersion > 16
             location.setElapsedRealtimeNanos(SystemClock.elapsedRealtimeNanos());
         }
-        locationManager.setTestProviderLocation(mMockProviderName, location);
+        mLocationManager.setTestProviderLocation(mMockProviderName, location);
     }
 
 //    实现BDLocationListener接口,BDLocationListener为结果监听接口，异步获取定位结果
@@ -296,6 +321,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     @Override
     protected void onDestroy() {
         super.onDestroy();
+        stopMockLocation();
         //在activity执行onDestroy时执行mMapView.onDestroy()，实现地图生命周期管理
         mMapView.onDestroy();
         thread = null;
